@@ -47,6 +47,11 @@ Count arrivals at each of Gaza's eight shoreline segments for every
 release point and compute transit statistics.
 
 ```{python}
+# Gracefully handle trajectories missing a 'segment' column
+if 'segment' not in df.columns:
+    # Assign a single default segment so aggregation still works
+    df['segment'] = 'Unknown'
+
 summary = (
     df.groupby(['release_id', 'segment'])
       .agg(arrivals=('particle_id', 'count'),
