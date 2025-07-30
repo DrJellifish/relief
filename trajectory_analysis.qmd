@@ -65,7 +65,14 @@ summary.head()
 ### Heatmap of Arrival Frequency
 
 ```{python}
-heat = summary.pivot('release_id', 'segment', 'arrivals')
+# Use pivot_table for robustness and explicit keywords
+heat = summary.pivot_table(
+    index='release_id',
+    columns='segment',
+    values='arrivals',
+    aggfunc='sum',
+    fill_value=0
+)
 plt.figure(figsize=(8,6))
 sns.heatmap(heat, annot=True, cmap='viridis')
 plt.title('Arrivals per Release Point and Gaza Segment')
