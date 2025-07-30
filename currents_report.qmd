@@ -1,0 +1,52 @@
+---
+title: Mediterranean Currents Forecast
+format:
+  html:
+    theme: cosmo
+    toc: true
+---
+
+```{python}
+import pandas as pd
+from datetime import datetime
+from pathlib import Path
+```
+
+## Download Currents
+
+```{python}
+# Read schedule and determine window
+schedule = pd.read_csv('release_schedule_15min.csv')
+start = schedule['release_time'].min()
+start_date = datetime.now().strftime('%Y-%m-%d')
+print(f"Using start date {start_date}")
+```
+
+Use the Python script below to fetch the Copernicus forecast data using
+`motuclient`. Credentials should be in `CMEMS_USER` and `CMEMS_PWD`.
+
+```{python}
+!python3 download_cmems_currents.py
+```
+
+## Visualize First Timestamp
+
+```{python}
+import xarray as xr
+import cartopy.crs as ccrs
+import matplotlib.pyplot as plt
+
+# Open downloaded file
+nc_files = list(Path('.').glob('med_currents_*.nc'))
+if not nc_files:
+    print('No NetCDF file found')
+else:
+    ds = xr.open_dataset(nc_files[0])
+    first = ds.isel(time=0)
+    fig = plt.figure(figsize=(8,6))
+    ax = plt.axes(projection=ccrs.PlateCarree())
+    q = ax.quiver(first.longitude, first.latitude, first.uo, first.vo, scale=2)
+    ax.coastlines()
+    ax.set_title('Surface currents at first forecast hour')
+    plt.show()
+```
