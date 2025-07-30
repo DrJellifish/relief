@@ -33,7 +33,15 @@ max_lat = schedule['lat'].max() + 0.5
 min_lon = schedule['lon'].min() - 0.5
 max_lon = schedule['lon'].max() + 0.5
 
-# 4. Build motuclient command
+# 4. Verify CMEMS credentials
+cmems_user = os.environ.get("CMEMS_USER", "")
+cmems_pwd = os.environ.get("CMEMS_PWD", "")
+if not cmems_user or not cmems_pwd:
+    raise SystemExit(
+        "CMEMS credentials not set. Please define CMEMS_USER and CMEMS_PWD."
+    )
+
+# 5. Build motuclient command
 out_name = f"med_currents_{start_datetime:%Y%m%dT%H%M%S}_{end_datetime:%Y%m%dT%H%M%S}.nc"
 
 motu_cmd = [
@@ -48,8 +56,8 @@ motu_cmd = [
     "--depth-min", "0.494", "--depth-max", "0.494",
     "--variable", "uo", "--variable", "vo",
     "--out-dir", ".", "--out-name", out_name,
-    "--user", os.environ.get("CMEMS_USER", ""),
-    "--pwd", os.environ.get("CMEMS_PWD", ""),
+    "--user", cmems_user,
+    "--pwd", cmems_pwd,
 ]
 
 print("Running:", " ".join(motu_cmd))
