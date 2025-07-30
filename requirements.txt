@@ -1,0 +1,12 @@
+faicons
+shiny
+shinywidgets
+plotly
+pandas
+ridgeplot
+xarray
+cartopy
+matplotlib
+netCDF4
+dask
+motuclient
