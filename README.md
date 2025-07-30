@@ -38,3 +38,7 @@ Connect:
 ```bash
 quarto render trajectory_analysis.qmd
 ```
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
