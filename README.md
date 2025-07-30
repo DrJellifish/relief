@@ -17,6 +17,14 @@ export CMEMS_PWD=<your CMEMS password>
 python3 download_cmems_currents.py
 ```
 
+For PowerShell, use:
+
+```powershell
+$env:CMEMS_USER="<your CMEMS username>"
+$env:CMEMS_PWD="<your CMEMS password>"
+python download_cmems_currents.py
+```
+
 ## Quarto Dashboard
 
 `currents_report.qmd` is a Quarto document that executes the Python
