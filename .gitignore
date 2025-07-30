@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+
+# Quarto build output
+_site/
+*.html
+
+# Large data files
+*.nc
