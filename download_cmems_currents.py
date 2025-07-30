@@ -49,7 +49,13 @@ motu_cmd = [
     "--pwd", os.environ.get("CMEMS_PWD", ""),
 ]
 
-print("Running:", " ".join(motu_cmd))
+# Display the command without exposing the password
+display_cmd = motu_cmd.copy()
+if "--pwd" in display_cmd:
+    pwd_idx = display_cmd.index("--pwd")
+    if pwd_idx + 1 < len(display_cmd):
+        display_cmd[pwd_idx + 1] = "***"
+print("Running:", " ".join(display_cmd))
 ret = subprocess.run(motu_cmd)
 if ret.returncode != 0:
     raise SystemExit(f"motuclient failed with code {ret.returncode}")
