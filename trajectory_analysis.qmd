@@ -1,0 +1,101 @@
+---
+title: "Gaza Drift Trajectory Analysis"
+format:
+  html:
+    theme: cosmo
+    toc: true
+---
+
+```{python}
+import pandas as pd
+import xarray as xr
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from pathlib import Path
+```
+
+## Load Trajectory Data
+
+The analysis expects either a NetCDF file `trajectories.nc` or a CSV file
+`trajectories.csv` containing particle tracks. Columns should include at
+least `particle_id`, `release_id`, `segment`, `transit_hours` and `time`.
+
+```{python}
+traj_file = None
+for ext in ("*.nc", "*.csv"):
+    files = list(Path('.').glob(ext))
+    if files:
+        traj_file = files[0]
+        break
+
+if traj_file is None:
+    raise FileNotFoundError("No trajectories file found")
+
+if traj_file.suffix == '.nc':
+    ds = xr.open_dataset(traj_file)
+    df = ds.to_dataframe().reset_index()
+else:
+    df = pd.read_csv(traj_file)
+
+df.head()
+```
+
+## Aggregate Arrivals by Segment
+
+Count arrivals at each of Gaza's eight shoreline segments for every
+release point and compute transit statistics.
+
+```{python}
+summary = (
+    df.groupby(['release_id', 'segment'])
+      .agg(arrivals=('particle_id', 'count'),
+           mean_transit=('transit_hours', 'mean'),
+           min_transit=('transit_hours', 'min'))
+      .reset_index()
+)
+summary.head()
+```
+
+### Heatmap of Arrival Frequency
+
+```{python}
+heat = summary.pivot('release_id', 'segment', 'arrivals')
+plt.figure(figsize=(8,6))
+sns.heatmap(heat, annot=True, cmap='viridis')
+plt.title('Arrivals per Release Point and Gaza Segment')
+plt.ylabel('Release Point')
+plt.xlabel('Gaza Segment')
+plt.tight_layout()
+plt.show()
+```
+
+## Example Trajectory Plot
+
+```{python}
+example_date = df['time'].min()
+mask = df['time'].dt.date == example_date.date()
+example = df[mask]
+
+plt.figure(figsize=(8,6))
+for seg, seg_df in example.groupby('segment'):
+    plt.plot(seg_df['lon'], seg_df['lat'], label=f'Segment {seg}')
+plt.legend(title='Gaza Segment')
+plt.xlabel('Longitude')
+plt.ylabel('Latitude')
+plt.title(f'Trajectories on {example_date.date()}')
+plt.show()
+```
+
+## Gaza Segment Productivity
+
+```{python}
+prod = summary.groupby('segment')['arrivals'].mean()
+plt.figure(figsize=(8,4))
+prod.plot.bar(color='skyblue')
+plt.xlabel('Gaza Segment')
+plt.ylabel('Average Arrivals')
+plt.title('Average Arrival Frequency by Segment')
+plt.tight_layout()
+plt.show()
+```

@@ -5,3 +5,7 @@ plotly
 pandas
 ridgeplot
 jupyter
+xarray
+netCDF4
+matplotlib
+seaborn

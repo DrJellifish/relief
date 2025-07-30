@@ -28,3 +28,13 @@ quarto publish connect currents_report.qmd
 Create a free account on [Posit Connect Cloud](https://connect.posit.cloud)
 and follow the [documentation](https://docs.posit.co/connect-cloud/) to
 publish the dashboard.
+
+## Trajectory Analysis
+
+`trajectory_analysis.qmd` aggregates bottle raft trajectories and
+visualizes Gaza shoreline arrivals. Render it locally or publish to Posit
+Connect:
+
+```bash
+quarto render trajectory_analysis.qmd
+```
