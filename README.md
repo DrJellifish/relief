@@ -7,10 +7,13 @@ Mediterranean surface current data for a 72-hour forecast window using
 
 ## Downloading CMEMS Currents
 
-Use the Python script to download the NetCDF file. Ensure `CMEMS_USER` and
-`CMEMS_PWD` are set in your environment.
+Install the required packages and export your Copernicus credentials before
+running the download script:
 
 ```bash
+pip install -r requirements.txt
+export CMEMS_USER=<your CMEMS username>
+export CMEMS_PWD=<your CMEMS password>
 python3 download_cmems_currents.py
 ```
 
@@ -27,7 +30,8 @@ quarto publish connect currents_report.qmd
 
 Create a free account on [Posit Connect Cloud](https://connect.posit.cloud)
 and follow the [documentation](https://docs.posit.co/connect-cloud/) to
-publish the dashboard.
+publish the dashboard. Note that the hosted environment is restricted and
+may not include heavy geospatial packages like `xarray` and `cartopy`.
 
 ## Trajectory Analysis
 
