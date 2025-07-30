@@ -9,3 +9,5 @@ xarray
 netCDF4
 matplotlib
 seaborn
+cartopy
+motuclient
