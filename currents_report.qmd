@@ -1,0 +1,45 @@
+---
+title: Mediterranean Currents Forecast
+format:
+  html:
+    theme: cosmo
+    toc: true
+jupyter: python3
+---
+
+```{python}
+import subprocess
+import xarray as xr
+import pandas as pd
+import matplotlib.pyplot as plt
+import cartopy.crs as ccrs
+```
+
+## Download Currents
+
+Run the Python downloader script. Credentials must be provided via `CMEMS_USER` and `CMEMS_PWD`. Optionally set `SIM_START_DATE` (YYYY-MM-DD).
+
+```{python}
+subprocess.run(["python3", "download_cmems_currents.py"], check=True)
+```
+
+## Visualize First Timestamp
+
+```{python}
+import glob
+files = sorted(glob.glob("med_currents_*.nc"))
+if not files:
+    print("No NetCDF file found")
+else:
+    ds = xr.open_dataset(files[0])
+    u = ds['uo'].isel(depth=0, time=0)
+    v = ds['vo'].isel(depth=0, time=0)
+    lon = ds['longitude']
+    lat = ds['latitude']
+    fig = plt.figure(figsize=(8,6))
+    ax = plt.axes(projection=ccrs.PlateCarree())
+    ax.coastlines()
+    ax.quiver(lon, lat, u, v, scale=5)
+    ax.set_title("Surface currents at " + str(ds['time'].values[0])[:19])
+    plt.show()
+```
