@@ -12,7 +12,7 @@ Copernicus Marine credentials. Optionally specify `SIM_START_DATE`
 
 import os
 import subprocess
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import pandas as pd
 
 # 1. Load release schedule
@@ -20,7 +20,10 @@ schedule = pd.read_csv("release_schedule_15min.csv")
 
 # 2. Determine time window
 start_time_str = schedule['release_time'].min()
-start_date_str = os.environ.get("SIM_START_DATE", datetime.utcnow().strftime("%Y-%m-%d"))
+start_date_str = os.environ.get(
+    "SIM_START_DATE",
+    datetime.now(timezone.utc).strftime("%Y-%m-%d")
+)
 start_datetime = datetime.strptime(f"{start_date_str} {start_time_str}", "%Y-%m-%d %H:%M:%S")
 end_datetime = start_datetime + timedelta(hours=72)
 

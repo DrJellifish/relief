@@ -8,7 +8,7 @@ format:
 
 ```{python}
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 ```
 
@@ -18,7 +18,7 @@ from pathlib import Path
 # Read schedule and determine window
 schedule = pd.read_csv('release_schedule_15min.csv')
 start = schedule['release_time'].min()
-start_date = datetime.now().strftime('%Y-%m-%d')
+start_date = datetime.now(timezone.utc).strftime('%Y-%m-%d')
 print(f"Using start date {start_date}")
 ```
 
