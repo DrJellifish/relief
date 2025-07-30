@@ -70,7 +70,7 @@ plt.tight_layout()
 plt.show()
 ```
 
-## Example Trajectory Plot
+## Example Trajectory Map
 
 ```{python}
 example_date = df['time'].min()
@@ -85,6 +85,54 @@ plt.xlabel('Longitude')
 plt.ylabel('Latitude')
 plt.title(f'Trajectories on {example_date.date()}')
 plt.show()
+```
+
+## Ranked Release Locations
+
+```{python}
+# Load release schedule
+schedule = pd.read_csv('release_schedule_15min.csv')
+
+# Total arrivals and fastest transit for each release location
+totals = (
+    summary.groupby('release_id')
+           .agg(total_arrivals=('arrivals', 'sum'),
+                fastest_time=('min_transit', 'min'))
+           .reset_index()
+)
+
+# Gaza segment with the most arrivals for each release
+best_seg = summary.loc[summary.groupby('release_id')['arrivals'].idxmax(),
+                       ['release_id', 'segment', 'arrivals']]
+best_seg = best_seg.rename(columns={'segment': 'best_segment',
+                                    'arrivals': 'best_segment_arrivals'})
+
+rank_release = (totals.merge(best_seg, on='release_id')
+                        .merge(schedule, on='release_id', how='left'))
+rank_release = rank_release.sort_values('total_arrivals', ascending=False)
+rank_release.index = range(1, len(rank_release) + 1)
+rank_release[['release_id', 'lat', 'lon', 'best_segment', 'release_time',
+              'total_arrivals', 'fastest_time']]
+```
+
+## Ranked Gaza Segments
+
+```{python}
+# Total arrivals to each Gaza segment
+seg_totals = (summary.groupby('segment')['arrivals']
+                        .sum()
+                        .reset_index(name='total_arrivals'))
+
+# Top contributing release location for each segment
+top_src = summary.loc[summary.groupby('segment')['arrivals'].idxmax(),
+                      ['segment', 'release_id', 'arrivals']]
+top_src = top_src.rename(columns={'release_id': 'top_source_location',
+                                  'arrivals': 'source_arrivals'})
+
+seg_rank = seg_totals.merge(top_src, on='segment')
+seg_rank = seg_rank.sort_values('total_arrivals', ascending=False)
+seg_rank.index = range(1, len(seg_rank) + 1)
+seg_rank
 ```
 
 ## Gaza Segment Productivity
