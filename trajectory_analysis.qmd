@@ -158,9 +158,14 @@ seg_rank
 ## Gaza Segment Productivity
 
 ```{python}
-prod = summary.groupby('segment')['arrivals'].mean()
-plt.figure(figsize=(8,4))
-prod.plot.bar(color='skyblue')
+prod_table = summary.groupby('segment')['arrivals'].mean().reset_index(name='avg_arrivals')
+prod_table
+```
+
+```{python}
+prod_table.set_index('segment')[
+    'avg_arrivals'
+].plot.bar(color='skyblue', figsize=(8,4))
 plt.xlabel('Gaza Segment')
 plt.ylabel('Average Arrivals')
 plt.title('Average Arrival Frequency by Segment')
