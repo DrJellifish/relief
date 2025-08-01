@@ -1,9 +1,9 @@
 # relief
 
 This repository demonstrates an automated workflow to fetch Copernicus
-Mediterranean surface current data for a 72-hour forecast window using
-`motuclient`. The release schedule used for the query is included in
-`release_schedule_15min.csv`.
+Mediterranean surface current data for a 72-hour forecast window using the
+`copernicusmarine` toolbox. The release schedule used for the query is included
+in `release_schedule_15min.csv`.
 
 ## Downloading CMEMS Currents
 
@@ -12,16 +12,16 @@ running the download script:
 
 ```bash
 pip install -r requirements.txt
-export CMEMS_USER=<your CMEMS username>
-export CMEMS_PWD=<your CMEMS password>
+export COPERNICUSMARINE_SERVICE_USERNAME=<your CMEMS username>
+export COPERNICUSMARINE_SERVICE_PASSWORD=<your CMEMS password>
 python3 download_cmems_currents.py
 ```
 
 For PowerShell, use:
 
 ```powershell
-$env:CMEMS_USER="<your CMEMS username>"
-$env:CMEMS_PWD="<your CMEMS password>"
+$env:COPERNICUSMARINE_SERVICE_USERNAME="<your CMEMS username>"
+$env:COPERNICUSMARINE_SERVICE_PASSWORD="<your CMEMS password>"
 python download_cmems_currents.py
 ```
 
