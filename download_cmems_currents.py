@@ -1,19 +1,21 @@
 #!/usr/bin/env python3
-"""Download CMEMS 72h forecast currents using motuclient.
+"""Download CMEMS 72h forecast currents using the Copernicus Marine Toolbox.
 
-This script reads `release_schedule_15min.csv`, determines the spatial
-bounds and temporal window, then calls the `motuclient` command line
-utility to download surface currents for use in drift modelling.
+This script reads ``release_schedule_15min.csv`` to determine the spatial
+bounds and temporal window for the request. It then downloads surface
+currents via :mod:`copernicusmarine` for use in drift modelling.
 
-Set the environment variables `CMEMS_USER` and `CMEMS_PWD` with your
-Copernicus Marine credentials. Optionally specify `SIM_START_DATE`
-(YYYY-MM-DD) to control the forecast start date.
+Set the environment variables ``COPERNICUSMARINE_SERVICE_USERNAME`` and
+``COPERNICUSMARINE_SERVICE_PASSWORD`` with your Copernicus Marine
+credentials. Optionally specify ``SIM_START_DATE`` (``YYYY-MM-DD``) to
+control the forecast start date.
 """
 
 import os
-import subprocess
 from datetime import datetime, timedelta, timezone
+
 import pandas as pd
+import copernicusmarine
 
 # 1. Load release schedule
 schedule = pd.read_csv("release_schedule_15min.csv")
@@ -34,41 +36,34 @@ min_lon = schedule['lon'].min() - 0.5
 max_lon = schedule['lon'].max() + 0.5
 
 # 4. Verify CMEMS credentials
-cmems_user = os.environ.get("CMEMS_USER", "")
-cmems_pwd = os.environ.get("CMEMS_PWD", "")
+cmems_user = os.environ.get("COPERNICUSMARINE_SERVICE_USERNAME", "")
+cmems_pwd = os.environ.get("COPERNICUSMARINE_SERVICE_PASSWORD", "")
 if not cmems_user or not cmems_pwd:
     raise SystemExit(
-        "CMEMS credentials not set. Please define CMEMS_USER and CMEMS_PWD."
+        "Copernicus Marine credentials not set. Please define "
+        "COPERNICUSMARINE_SERVICE_USERNAME and COPERNICUSMARINE_SERVICE_PASSWORD."
     )
 
-# 5. Build motuclient command
-out_name = f"med_currents_{start_datetime:%Y%m%dT%H%M%S}_{end_datetime:%Y%m%dT%H%M%S}.nc"
+# 5. Download using Copernicus Marine Toolbox
+out_name = (
+    f"med_currents_{start_datetime:%Y%m%dT%H%M%S}_"
+    f"{end_datetime:%Y%m%dT%H%M%S}.nc"
+)
 
-motu_cmd = [
-    "motuclient",
-    "--motu", "https://nrt.cmems-du.eu/motu-web/Motu",
-    "--service-id", "MEDSEA_ANALYSISFORECAST_PHY_006_013-TDS",
-    "--product-id", "cmems_mod_med_phy_anfc_0.027deg_PT1H-m",
-    "--longitude-min", str(min_lon), "--longitude-max", str(max_lon),
-    "--latitude-min", str(min_lat), "--latitude-max", str(max_lat),
-    "--date-min", start_datetime.strftime("%Y-%m-%d %H:%M:%S"),
-    "--date-max", end_datetime.strftime("%Y-%m-%d %H:%M:%S"),
-    "--depth-min", "0.494", "--depth-max", "0.494",
-    "--variable", "uo", "--variable", "vo",
-    "--out-dir", ".", "--out-name", out_name,
-    "--user", cmems_user,
-    "--pwd", cmems_pwd,
-]
+dataset_id = "cmems_mod_med_phy-cur_anfc_4.2km_PT15M-i"
+print("Downloading with Copernicus Marine Toolbox ...")
+resp = copernicusmarine.subset(
+    dataset_id=dataset_id,
+    variables=["uo", "vo"],
+    minimum_longitude=min_lon,
+    maximum_longitude=max_lon,
+    minimum_latitude=min_lat,
+    maximum_latitude=max_lat,
+    start_datetime=start_datetime,
+    end_datetime=end_datetime,
+    output_filename=out_name,
+    username=cmems_user,
+    password=cmems_pwd,
+)
 
-# Display the command without exposing the password
-display_cmd = motu_cmd.copy()
-if "--pwd" in display_cmd:
-    pwd_idx = display_cmd.index("--pwd")
-    if pwd_idx + 1 < len(display_cmd):
-        display_cmd[pwd_idx + 1] = "***"
-print("Running:", " ".join(display_cmd))
-ret = subprocess.run(motu_cmd)
-if ret.returncode != 0:
-    raise SystemExit(f"motuclient failed with code {ret.returncode}")
-
-print("Downloaded currents to", out_name)
+print("Downloaded currents to", resp.file_path)
