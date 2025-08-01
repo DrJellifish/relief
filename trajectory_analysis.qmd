@@ -38,6 +38,10 @@ if traj_file.suffix == '.nc':
 else:
     df = pd.read_csv(traj_file)
 
+# Ensure the 'time' column is parsed as datetime so pandas .dt methods work
+if 'time' in df.columns:
+    df['time'] = pd.to_datetime(df['time'])
+
 df.head()
 ```
 
