@@ -13,6 +13,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from pathlib import Path
+import cartopy.crs as ccrs
 ```
 
 ## Load Trajectory Data
@@ -93,13 +94,16 @@ example_date = df['time'].min()
 mask = df['time'].dt.date == example_date.date()
 example = df[mask]
 
-plt.figure(figsize=(8,6))
+fig = plt.figure(figsize=(8,6))
+ax = plt.axes(projection=ccrs.PlateCarree())
 for seg, seg_df in example.groupby('segment'):
-    plt.plot(seg_df['lon'], seg_df['lat'], label=f'Segment {seg}')
-plt.legend(title='Gaza Segment')
-plt.xlabel('Longitude')
-plt.ylabel('Latitude')
-plt.title(f'Trajectories on {example_date.date()}')
+    ax.plot(seg_df['lon'], seg_df['lat'], label=f'Segment {seg}',
+            transform=ccrs.PlateCarree())
+ax.coastlines()
+ax.legend(title='Gaza Segment')
+ax.set_xlabel('Longitude')
+ax.set_ylabel('Latitude')
+ax.set_title(f'Trajectories on {example_date.date()}')
 plt.show()
 ```
 
