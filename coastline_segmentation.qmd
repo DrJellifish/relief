@@ -1,0 +1,48 @@
+---
+title: "Palestinian Coastline Segmentation"
+format:
+  html:
+    theme: cosmo
+    toc: true
+---
+
+```{python}
+import geopandas as gpd
+import matplotlib.pyplot as plt
+from shapely.geometry import box
+from shapely.ops import substring, linemerge
+import cartopy.crs as ccrs
+import cartopy.io.shapereader as shapereader
+import cartopy.feature as cfeature
+
+# Load global coastline data from Natural Earth
+reader = shapereader.natural_earth(resolution='10m', category='physical', name='coastline')
+gdf = gpd.read_file(reader)
+
+# Bounding box around Gaza's coastline (approx.)
+bbox = box(34.15, 31.2, 34.6, 31.6)
+gdf_clip = gdf[gdf.intersects(bbox)]
+
+# Merge segments into a single line
+line = gdf_clip.unary_union
+if line.geom_type == 'MultiLineString':
+    line = linemerge(line)
+
+# Divide coastline into eight equal segments
+N = 8
+length = line.length
+segments = [substring(line, i*length/N, (i+1)*length/N) for i in range(N)]
+
+# Plot segmented coastline
+fig = plt.figure(figsize=(8,6))
+ax = plt.axes(projection=ccrs.PlateCarree())
+ax.set_extent([34.15, 34.6, 31.2, 31.6])
+ax.add_feature(cfeature.LAND, facecolor='lightgray')
+ax.coastlines('10m')
+for i, seg in enumerate(segments, 1):
+    x, y = seg.xy
+    ax.plot(x, y, transform=ccrs.PlateCarree(), label=f'Segment {i}')
+ax.legend()
+ax.set_title('Segmentation of the Palestinian Coastline (Gaza)')
+plt.show()
+```
