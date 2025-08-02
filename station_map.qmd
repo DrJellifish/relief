@@ -1,0 +1,43 @@
+---
+title: "Mediterranean Station Map"
+format:
+  html:
+    theme: cosmo
+    toc: true
+---
+
+```{python}
+import pandas as pd
+import matplotlib.pyplot as plt
+import cartopy.crs as ccrs
+import cartopy.feature as cfeature
+```
+
+## Station Locations
+
+```{python}
+# Load unique station coordinates
+schedule = pd.read_csv('release_schedule_15min.csv')
+stations = schedule.drop_duplicates(subset='release_id')[['release_id', 'lat', 'lon']]
+
+# Set up Mediterranean map
+fig = plt.figure(figsize=(8,6))
+ax = plt.axes(projection=ccrs.PlateCarree())
+ax.add_feature(cfeature.LAND, facecolor='lightgray')
+ax.add_feature(cfeature.COASTLINE)
+ax.set_extent([-6, 36, 30, 46])
+
+# Plot station locations
+ax.scatter(stations['lon'], stations['lat'], color='red', s=30, zorder=5)
+for _, row in stations.iterrows():
+    ax.text(row['lon'] + 0.1, row['lat'] + 0.1, str(row['release_id']), fontsize=8)
+
+ax.set_title('Release Station Locations')
+plt.show()
+```
+
+## Station Coordinates
+
+```{python}
+stations
+```
