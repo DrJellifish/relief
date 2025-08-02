@@ -10,4 +10,5 @@ netCDF4
 matplotlib
 seaborn
 cartopy
+geopandas
 copernicusmarine
