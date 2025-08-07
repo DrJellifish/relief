@@ -18,7 +18,18 @@ from datetime import datetime, timedelta, timezone
 import numpy as np
 import pandas as pd
 import copernicusmarine
+from shapely.geometry import Point, Polygon
 from parcels import AdvectionRK4, FieldSet, JITParticle, ParticleSet, Variable
+
+# Gaza coastal polygon (approximate)
+gaza_polygon = Polygon(
+    [
+        (34.2, 31.2),
+        (34.6, 31.2),
+        (34.6, 31.6),
+        (34.2, 31.6),
+    ]
+)
 
 # ---------------------------------------------------------------------------
 # 1. Load release locations
@@ -103,15 +114,23 @@ pset.execute(
     dt=timedelta(minutes=15),
 )
 
-# 10. Output final positions
-final_positions = []
-for particle, loc in zip(pset, locations["release_id"].values):
-    print(
-        f"release_id={loc}: final_lon={particle.lon:.4f}, final_lat={particle.lat:.4f}"
-    )
-    final_positions.append(
-        {"release_id": loc, "lon": particle.lon, "lat": particle.lat}
-    )
+# 10. Output final positions and count arrivals in Gaza
+final_positions = [
+    {"release_id": rid, "lon": p.lon, "lat": p.lat}
+    for p, rid in zip(pset, locations["release_id"].values)
+]
 
 final_positions_df = pd.DataFrame(final_positions)
+final_positions_df["in_gaza"] = final_positions_df.apply(
+    lambda row: gaza_polygon.contains(Point(row["lon"], row["lat"])), axis=1
+)
+
+arrivals = (
+    final_positions_df.groupby("release_id")["in_gaza"]
+    .sum()
+    .reset_index(name="particles_in_gaza")
+)
+
+print(arrivals)
 final_positions_df.to_csv("final_positions.csv", index=False)
+arrivals.to_csv("particles_in_gaza.csv", index=False)
