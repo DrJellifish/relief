@@ -104,7 +104,14 @@ pset.execute(
 )
 
 # 10. Output final positions
+final_positions = []
 for particle, loc in zip(pset, locations["release_id"].values):
     print(
         f"release_id={loc}: final_lon={particle.lon:.4f}, final_lat={particle.lat:.4f}"
     )
+    final_positions.append(
+        {"release_id": loc, "lon": particle.lon, "lat": particle.lat}
+    )
+
+final_positions_df = pd.DataFrame(final_positions)
+final_positions_df.to_csv("final_positions.csv", index=False)
